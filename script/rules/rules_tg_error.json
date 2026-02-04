@@ -1,0 +1,143 @@
+{
+    "name": "tg-error-alert",
+    "interval": "1m",
+    "rules": [
+        {
+            "expr": "",
+            "for": "1m",
+            "keep_firing_for": "0s",
+            "grafana_alert": {
+                "title": "tg-error-alert",
+                "condition": "C",
+                "data": [
+                    {
+                        "refId": "A",
+                        "queryType": "range",
+                        "relativeTimeRange": {
+                            "from": 60,
+                            "to": 0
+                        },
+                        "datasourceUid": "loki",
+                        "model": {
+                            "datasource": {
+                                "type": "loki",
+                                "uid": "loki"
+                            },
+                            "editorMode": "code",
+                            "expr": "sum by (error_msg) (\n  count_over_time(\n    {job=\"laravel\"} \n    |~ \"ERROR\" \n    | regexp \"(?P<error_msg>.*ERROR.*)\"  # 這邊是一個正則範例，抓取包含 ERROR 的整行\n    [1m]\n  )\n)",
+                            "instant": true,
+                            "intervalMs": 1000,
+                            "maxDataPoints": 43200,
+                            "queryType": "range",
+                            "refId": "A"
+                        }
+                    },
+                    {
+                        "refId": "B",
+                        "queryType": "",
+                        "relativeTimeRange": {
+                            "from": 0,
+                            "to": 0
+                        },
+                        "datasourceUid": "__expr__",
+                        "model": {
+                            "conditions": [
+                                {
+                                    "evaluator": {
+                                        "params": [],
+                                        "type": "gt"
+                                    },
+                                    "operator": {
+                                        "type": "and"
+                                    },
+                                    "query": {
+                                        "params": [
+                                            "B"
+                                        ]
+                                    },
+                                    "reducer": {
+                                        "params": [],
+                                        "type": "last"
+                                    },
+                                    "type": "query"
+                                }
+                            ],
+                            "datasource": {
+                                "type": "__expr__",
+                                "uid": "__expr__"
+                            },
+                            "expression": "A",
+                            "intervalMs": 1000,
+                            "maxDataPoints": 43200,
+                            "reducer": "last",
+                            "refId": "B",
+                            "type": "reduce"
+                        }
+                    },
+                    {
+                        "refId": "C",
+                        "queryType": "",
+                        "relativeTimeRange": {
+                            "from": 0,
+                            "to": 0
+                        },
+                        "datasourceUid": "__expr__",
+                        "model": {
+                            "conditions": [
+                                {
+                                    "evaluator": {
+                                        "params": [
+                                            0
+                                        ],
+                                        "type": "gt"
+                                    },
+                                    "operator": {
+                                        "type": "and"
+                                    },
+                                    "query": {
+                                        "params": [
+                                            "C"
+                                        ]
+                                    },
+                                    "reducer": {
+                                        "params": [],
+                                        "type": "last"
+                                    },
+                                    "type": "query"
+                                }
+                            ],
+                            "datasource": {
+                                "type": "__expr__",
+                                "uid": "__expr__"
+                            },
+                            "expression": "B",
+                            "intervalMs": 1000,
+                            "maxDataPoints": 43200,
+                            "refId": "C",
+                            "type": "threshold"
+                        }
+                    }
+                ],
+                "updated": "2026-01-23T06:46:52Z",
+                "updated_by": {
+                    "uid": "service",
+                    "name": ""
+                },
+                "intervalSeconds": 60,
+                "version": 1,
+                "uid": "rule-tg-error-alert",
+                "namespace_uid": "efb0gs3l9tou8b",
+                "rule_group": "tg-error-alert",
+                "no_data_state": "OK",
+                "exec_err_state": "Error"
+            },
+            "annotations": {
+                "summary": "Laravel Error: {{ $labels.error_msg }}",
+                "description": "Log detail: {{ $labels.error_msg }}"
+            },
+            "labels": {
+                "notify_policy": "fast"
+            }
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    uid: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+    version: 1
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    jsonData:
+      scrapeInterval: "15s" # 對應 UI 上的 "Scrape interval"
+      queryTimeout: "60s"   # 對應 UI 上的 "Query timeout"
+  - name: InfluxDB
+    type: influxdb
+    uid: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: k6-results
+    user: k6_user
+    isDefault: false
+    version: 1
+    jsonData:
+      version: Flux
+      defaultBucket: k6-results
+      organization: my-org
+    secureJsonData:
+      token: a_very_secret_admin_token

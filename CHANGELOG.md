@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Added
+- **docker-compose.yml**:
+    - 啟用了 `cadvisor` 服務以進行容器層級指標監控。
+- **.gitignore**:
+    - 完善了忽略規則，涵蓋 MacOS 系統檔、IDE 設定、Docker 覆寫檔、日誌以及 Laravel/Vue/Python 開發環境之暫存檔。
+- **prometheus/prometheus.yml**:
+    - 將設定檔中的英文註解翻譯為繁體中文，並補充各項監控任務的說明。
+
+### Fixed
+- **docker-compose.yml**:
+    - 修正了 `cadvisor` 服務區塊的 YAML 縮進錯誤。
+    - 移除了過時的 `version: '3'` 屬性，消除 Docker Compose 警告。
+    - 解決了容器名稱衝突問題 (針對 `node_exporter` 等服務)。
+    - 優化了網路配置，移除硬編碼的網路名稱以避免跨專案歸屬告警。
 - **setup_git_sync.ps1**:
     - 重構腳本邏輯，使用陣列管理遠端列表，提升可維護性。
     - 新增 `git config --unset-all` 機制，確保多次執行不會產生重複設定 (Idempotency)。

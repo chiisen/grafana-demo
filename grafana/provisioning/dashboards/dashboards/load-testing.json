@@ -1,0 +1,180 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 22,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineStyle": {
+                            "fill": "solid"
+                        },
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green"
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "http_req_duration _value"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "vus vus_active"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "hidden"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.6.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "// Query A (The Authoritative Final Version)\n// 策略：\n// 1. aggregateWindow: 計算每個時間窗口內的請求數 (Gauge)。\n// 2. cumulativeSum: 將離散的計數轉換為一個持續增長的累計計數器 (Cumulative Counter)。\n// 3. derivative: 對這個完美的累計計數器計算其每秒的變化率，得出精準的速率。\n// 這個模式完全避開了有問題的 map() 函數，並且是計算速率的黃金標準。\n\nfrom(bucket: \"k6-results\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"http_reqs\" and r._field == \"value\")\n  |> group(columns: [\"_measurement\"]) \n  |> aggregateWindow(every: v.windowPeriod, fn: count, createEmpty: false)\n  |> cumulativeSum() \n  |> derivative(unit: 1s, nonNegative: true)\n  |> set(key: \"_field\", value: \"http_req_rate\")\n  |> drop(columns: [\"_start\", \"_stop\"])",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "hide": false,
+                    "query": "// Query B (Final Corrected Version): P95 請求延遲\n// 解決方案：在 aggregateWindow 之前，使用 toFloat() 將 _value 欄位從 string 強制轉換為 float\n\nfrom(bucket: \"k6-results\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"http_req_duration\" and r._field == \"value\")\n  |> group(columns: [\"_measurement\"]) \n  |> aggregateWindow(\n       every: v.windowPeriod,\n       fn: (tables=<-, column=\"_value\") => tables |> quantile(q: 0.95, column: column),\n       createEmpty: true\n     )\n  |> set(key: \"_field\", value: \"http_req_duration_p95\")\n  |> drop(columns: [\"_start\", \"_stop\"])",
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "hide": false,
+                    "query": "// Query C: 活躍虛擬用戶數 (VUs)\n// 使用 mean 讓線條更平滑，並 fill(0.0) 確保測試停止時 VUs 能歸零\n\nfrom(bucket: \"k6-results\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"vus\" and r._field == \"value\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> set(key: \"_field\", value: \"vus_active\")",
+                    "refId": "C"
+                }
+            ],
+            "title": "壓力測試核心指標：速率、延遲與 VUs",
+            "type": "timeseries"
+        }
+    ],
+    "preload": false,
+    "refresh": "auto",
+    "schemaVersion": 41,
+    "tags": [],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-30m",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Load testing",
+    "uid": "fey8kl0cikphcb",
+    "version": 2
+}

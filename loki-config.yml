@@ -2,30 +2,30 @@ auth_enabled: false
 
 server:
   http_listen_port: 3100
-  grpc_listen_port: 9096
+  # grpc_listen_port: 9096
+
+memberlist:
+  bind_port: 7946
 
 common:
-  instance_addr: 127.0.0.1
-  path_prefix: /tmp/loki
+  # 所有的儲存路徑都指向持久化 Volume /loki
+  path_prefix: /loki
   storage:
     filesystem:
-      chunks_directory: /tmp/loki/chunks
-      rules_directory: /tmp/loki/rules
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
   replication_factor: 1
   ring:
+    # 容器內部使用 loki 這個服務名稱，而不是 127.0.0.1
+    instance_addr: loki
+    # 【關鍵修正】使用 boltdb-shipper 將 ring 的狀態持久化到硬碟
     kvstore:
-      store: inmemory
+      store: memberlist
 
-query_range:
-  results_cache:
-    cache:
-      embedded_cache:
-        enabled: true
-        max_size_mb: 100
-
+# 【最佳實踐】TSDB 是目前推薦的索引儲存
 schema_config:
   configs:
-    - from: 2020-10-24
+    - from: 2025-01-01 # 建議將起始日期設為接近現在的時間
       store: tsdb
       object_store: filesystem
       schema: v13
@@ -33,5 +33,26 @@ schema_config:
         prefix: index_
         period: 24h
 
-ruler:
-  alertmanager_url: http://localhost:9093
+# 【最佳實踐】明確分離索引 (tsdb) 和塊 (filesystem) 的設定
+storage_config:
+  tsdb_shipper:
+    active_index_directory: /loki/tsdb-index
+
+# 【建議優化】加入 Limits 設定，保護 Loki
+limits_config:
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h # 拒收一週前的日誌
+  ingestion_rate_mb: 15        # 每用戶每秒最大接收速率 (MB/s)
+  ingestion_burst_size_mb: 20  # 每用戶每秒最大突發接收大小 (MB/s)
+  max_global_streams_per_user: 10000 # 每用戶最大 stream 數量
+  max_label_names_per_series: 30 # 每個 stream 最大標籤數量
+
+# 設定數據保留週期，當解決持久化設定後設定
+# chunk_store_config:
+#   # 設定日誌保留 90 天 (2160 小時)
+#   max_look_back_period: 2160h
+
+# table_manager:
+#   # 這是 tsdb 的必要設定，負責管理索引的保留
+#   retention_deletes_enabled: true
+#   retention_period: 720h

@@ -1,0 +1,305 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "bars",
+                        "fillOpacity": 100,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "normal"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "short"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "/.*/"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "title": "Filter logs",
+                                        "url": "/d/${__dashboard.uid}?${__url.params:vars}&var-job=${__series.labels.job}&var-level=${__series.labels.level}",
+                                        "targetBlank": false
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "calcs": ["sum"],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "multi",
+                    "sort": "none"
+                },
+                "graph": {},
+                "pieChartType": "pie"
+            },
+            "pluginVersion": "11.6.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "direction": "backward",
+                    "editorMode": "code",
+                    "expr": "sum by (job, level) (count_over_time({job=~\"${job:regex}\", level=~\"${level:regex}\"}[1m]))",
+                    "queryType": "range",
+                    "refId": "A"
+                }
+            ],
+            "title": "Log Volume by Job and Level",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 20,
+                "w": 24,
+                "x": 0,
+                "y": 8
+            },
+            "id": 1,
+            "options": {
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": true,
+                "enableLogDetails": true,
+                "prettifyLogMessage": false,
+                "showCommonLabels": false,
+                "showLabels": true,
+                "showTime": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false
+            },
+            "pluginVersion": "11.6.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "direction": "backward",
+                    "editorMode": "code",
+                    "expr": "{job=~\"${job:regex}\", level=~\"${level:regex}\"}",
+                    "queryType": "range",
+                    "refId": "A"
+                }
+            ],
+            "title": "Combined Logs - API, Laravel & Lifecycle",
+            "type": "logs"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": ["logs", "combined", "drilldown"],
+    "templating": {
+        "list": [
+            {
+                "current": {
+                    "selected": false,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "allFormat": "regex values",
+                "allValue": "api|laravel|order-lifecycle",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Job",
+                "multi": false,
+                "name": "job",
+                "options": [
+                    {
+                        "selected": false,
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    {
+                        "selected": false,
+                        "text": "api",
+                        "value": "api"
+                    },
+                    {
+                        "selected": false,
+                        "text": "laravel",
+                        "value": "laravel"
+                    },
+                    {
+                        "selected": false,
+                        "text": "order-lifecycle",
+                        "value": "order-lifecycle"
+                    }
+                ],
+                "query": "api,laravel,order-lifecycle",
+                "skipUrlSync": false,
+                "type": "custom"
+            },
+            {
+                "current": {
+                    "selected": false,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "allFormat": "regex values",
+                "allValue": ".*",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Level",
+                "multi": false,
+                "name": "level",
+                "options": [
+                    {
+                        "selected": false,
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    {
+                        "selected": false,
+                        "text": "DEBUG",
+                        "value": "DEBUG"
+                    },
+                    {
+                        "selected": false,
+                        "text": "INFO",
+                        "value": "INFO"
+                    },
+                    {
+                        "selected": false,
+                        "text": "NOTICE",
+                        "value": "NOTICE"
+                    },
+                    {
+                        "selected": false,
+                        "text": "WARNING",
+                        "value": "WARNING"
+                    },
+                    {
+                        "selected": false,
+                        "text": "ERROR",
+                        "value": "ERROR"
+                    },
+                    {
+                        "selected": false,
+                        "text": "CRITICAL",
+                        "value": "CRITICAL"
+                    },
+                    {
+                        "selected": false,
+                        "text": "ALERT",
+                        "value": "ALERT"
+                    },
+                    {
+                        "selected": false,
+                        "text": "EMERGENCY",
+                        "value": "EMERGENCY"
+                    }
+                ],
+                "query": "DEBUG,INFO,NOTICE,WARNING,ERROR,CRITICAL,ALERT,EMERGENCY",
+                "skipUrlSync": false,
+                "type": "custom"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-24h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Drilldown Combined Logs",
+    "uid": "drilldown-combined-logs",
+    "version": 0,
+    "weekStart": ""
+}
+

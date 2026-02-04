@@ -1,11 +1,40 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 15s # 預設抓取指標 (Scrape) 的頻率
+  evaluation_interval: 15s # 評估規則 (Rules) 的頻率
+
+# 告警規則 (Alerting Rules) 與預錄規則 (Recording Rules) 檔案路徑
+# rule_files:
+#   - "first.rules"
+#   - "second.rules"
 
 scrape_configs:
-  - job_name: 'prometheus'
+  # 抓取 Prometheus 本身指標的任務
+  - job_name: "prometheus"
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ["localhost:9090"] # Prometheus 本身的指標端點
 
-  - job_name: 'node_exporter'
+  # 抓取 Node Exporter 指標的任務 (用於主機系統指標)
+  - job_name: "node_exporter"
     static_configs:
-      - targets: ['node_exporter:9100']
+      - targets: ["node_exporter:9100"] # 替換為你的 Node Exporter IP 與埠號
+
+  # 抓取 cAdvisor 指標的任務 (用於容器指標)
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"] # 替換為你的 cAdvisor IP 與埠號
+    metric_relabel_configs:
+      - source_labels: [container]
+        regex: '/(.*)'
+        target_label: name
+        replacement: '$1'
+        action: replace
+
+  # 抓取 Loki 本身指標的任務
+  - job_name: "loki"
+    static_configs:
+      - targets: ["loki:3100"] 
+
+  # 抓取 Grafana 本身指標的任務
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']

@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   loki:
     image: grafana/loki:3.5.5
@@ -58,32 +56,32 @@ services:
     ports:
       - "9100:9100"
     healthcheck:
-      test: ["CMD", "/bin/true"]
+      test: [ "CMD", "/bin/true" ]
       interval: 1m
       timeout: 10s
       retries: 3
     networks:
       - observability
 
-  # cadvisor:
-  #   image: gcr.io/cadvisor/cadvisor:v0.49.1
-  #   restart: unless-stopped
-  #   container_name: cadvisor
-  #   volumes:
-  #     - /:/rootfs:ro
-  #     - /var/run:/var/run:ro
-  #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /etc/machine-id:/etc/machine-id:ro
-  #     - /var/lib/dbus/machine-id:/var/lib/dbus/machine-id:ro
-  #   # cAdvisor 在許多系統上需要提升的權限；儘可能保持最低權限
-  #   privileged: true
-  #   ports:
-  #     - 8080:8080
-  #   networks:
-  #     - observability
-    
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    restart: unless-stopped
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/lib/dbus/machine-id:/var/lib/dbus/machine-id:ro
+    # cAdvisor 在許多系統上需要提升的權限；儘可能保持最低權限
+    privileged: true
+    ports:
+      - 8080:8080
+    networks:
+      - observability
+
   # TODO: 添加 MySQL 導出器 (MySQL exporter)
   # mysql_exporter:
   #   image: prom/mysqld-exporter:v0.17.2
@@ -118,6 +116,26 @@ services:
     networks:
       - observability
 
+  setup:
+    image: alpine:latest
+    container_name: observability-setup
+    depends_on:
+      grafana:
+        condition: service_started
+    networks:
+      - observability
+    volumes:
+      - ./script:/script:ro
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GRAFANA_HOST=grafana:3000
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      # GRAFANA_TOKEN is loaded from .env
+      - GRAFANA_TOKEN=${GRAFANA_TOKEN}
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: >
+      "apk add --no-cache bash curl jq sqlite && bash /script/init_grafana.sh"
 networks:
   observability:
     name: observability
@@ -128,6 +146,6 @@ volumes:
   promtail-data:
   prometheus_data:
 
-# secrets:
-#   grafana_admin_password:
-#     file: ./secrets/grafana_admin_password.txt
+    # secrets:
+    #   grafana_admin_password:
+    #     file: ./secrets/grafana_admin_password.txt
