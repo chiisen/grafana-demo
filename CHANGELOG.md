@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - 優化了網路配置，將與專案主題無關的 `observability` 名稱重新命名為 `grafana-net`。
     - 將 `setup` 服務的容器名稱從 `observability-setup` 更改為 `grafana-setup`，使其更契合專案主題。
     - 解決了容器名稱衝突問題 (針對 `node_exporter` 等服務)。
+    - **[重構]** 統一服務與容器命名，將 `setup` 服務重命名為 `grafana-setup`。
+    - **[優化]** 為所有關鍵服務補齊 `restart: unless-stopped` 策略，提升系統穩定性。
+    - **[優化]** 啟用 Grafana 健康檢查，並將 `grafana-setup` 的依賴條件優化為 `service_healthy`。
+    - **[優化]** 將 `grafana-setup` 的基礎鏡像固定為 `alpine:3.21`。
 - **setup_git_sync.ps1**:
     - 重構腳本邏輯，使用陣列管理遠端列表，提升可維護性。
     - 新增 `git config --unset-all` 機制，確保多次執行不會產生重複設定 (Idempotency)。
