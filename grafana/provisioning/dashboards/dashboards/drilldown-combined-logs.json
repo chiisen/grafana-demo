@@ -1,4 +1,5 @@
 {
+    "description": "整合多個應用程式的日誌監控 Dashboard，支援互動式鑽取分析。包含 API、Laravel 和 Order Lifecycle 三個應用的日誌。使用 Loki 作為資料來源，提供日誌數量統計和原始日誌查看功能。支援按 Job（應用程式）和 Level（日誌等級）進行過濾。",
     "annotations": {
         "list": [
             {
@@ -21,6 +22,7 @@
     "links": [],
     "panels": [
         {
+            "description": "顯示每分鐘的日誌數量統計，按 Job（應用程式）和 Level（日誌等級）分組。使用堆疊長條圖呈現，圖例顯示總計數。支援點擊圖例進行 Drilldown 鑽取，自動過濾下方的日誌面板。查詢語法：sum by (job, level) (count_over_time({job=~\"${job:regex}\", level=~\"${level:regex}\"}[1m]))",
             "datasource": {
                 "type": "loki",
                 "uid": "loki"
@@ -105,7 +107,9 @@
             "id": 2,
             "options": {
                 "legend": {
-                    "calcs": ["sum"],
+                    "calcs": [
+                        "sum"
+                    ],
                     "displayMode": "table",
                     "placement": "bottom",
                     "showLegend": true
@@ -136,6 +140,7 @@
             "type": "timeseries"
         },
         {
+            "description": "顯示原始日誌內容，整合 API、Laravel 和 Order Lifecycle 三個應用的日誌。支援無限滾動、日誌詳細資訊展開、標籤顯示等功能。日誌按時間降序排列（最新的在上方）。可透過上方的 Job 和 Level 變數進行過濾，或點擊圖表進行 Drilldown 鑽取。查詢語法：{job=~\"${job:regex}\", level=~\"${level:regex}\"}",
             "datasource": {
                 "type": "loki",
                 "uid": "loki"
@@ -183,10 +188,15 @@
     "refresh": "30s",
     "schemaVersion": 38,
     "style": "dark",
-    "tags": ["logs", "combined", "drilldown"],
+    "tags": [
+        "logs",
+        "combined",
+        "drilldown"
+    ],
     "templating": {
         "list": [
             {
+                "description": "選擇要查看的應用程式。可選值：api（API 服務）、laravel（Laravel 應用）、order-lifecycle（訂單生命週期服務）。預設為 All（顯示所有應用）。此變數使用正則表達式格式，當選擇 All 時會匹配 api|laravel|order-lifecycle。",
                 "current": {
                     "selected": false,
                     "text": "All",
@@ -226,6 +236,7 @@
                 "type": "custom"
             },
             {
+                "description": "選擇要查看的日誌等級。支援標準的日誌等級：DEBUG（除錯）、INFO（資訊）、NOTICE（注意）、WARNING（警告）、ERROR（錯誤）、CRITICAL（嚴重）、ALERT（告警）、EMERGENCY（緊急）。預設為 All（顯示所有等級）。此變數使用正則表達式格式，當選擇 All 時會匹配所有等級（.*）。",
                 "current": {
                     "selected": false,
                     "text": "All",
@@ -302,4 +313,3 @@
     "version": 0,
     "weekStart": ""
 }
-
