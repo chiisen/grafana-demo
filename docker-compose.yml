@@ -9,7 +9,7 @@ services:
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
-      - observability
+      - grafana-net
 
   promtail:
     image: grafana/promtail:3.5
@@ -21,7 +21,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command: -config.file=/etc/promtail/config.yaml -config.expand-env=true
     networks:
-      - observability
+      - grafana-net
 
   prometheus:
     image: prom/prometheus:v3.5.0
@@ -38,7 +38,7 @@ services:
     ports:
       - 9090:9090
     networks:
-      - observability
+      - grafana-net
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:v1.9.1
@@ -61,7 +61,7 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - observability
+      - grafana-net
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
@@ -80,7 +80,7 @@ services:
     ports:
       - 8080:8080
     networks:
-      - observability
+      - grafana-net
 
   # TODO: 添加 MySQL 導出器 (MySQL exporter)
   # mysql_exporter:
@@ -93,7 +93,7 @@ services:
   #   ports:
   #     - "9104:9104"
   #   networks:
-  #     - observability
+  #     - grafana-net
 
   grafana:
     image: grafana/grafana:12.1
@@ -114,16 +114,16 @@ services:
     #   timeout: 10s
     #   retries: 5
     networks:
-      - observability
+      - grafana-net
 
   setup:
     image: alpine:latest
-    container_name: observability-setup
+    container_name: grafana-setup
     depends_on:
       grafana:
         condition: service_started
     networks:
-      - observability
+      - grafana-net
     volumes:
       - ./script:/script:ro
       - grafana-data:/var/lib/grafana
@@ -137,8 +137,8 @@ services:
     command: >
       "apk add --no-cache bash curl jq sqlite && bash /script/init_grafana.sh"
 networks:
-  observability:
-    name: observability
+  grafana-net:
+    name: grafana-net
 
 volumes:
   grafana-data:

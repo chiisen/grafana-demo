@@ -19,8 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **docker-compose.yml**:
     - 修正了 `cadvisor` 服務區塊的 YAML 縮進錯誤。
     - 移除了過時的 `version: '3'` 屬性，消除 Docker Compose 警告。
+    - 優化了網路配置，將與專案主題無關的 `observability` 名稱重新命名為 `grafana-net`。
+    - 將 `setup` 服務的容器名稱從 `observability-setup` 更改為 `grafana-setup`，使其更契合專案主題。
     - 解決了容器名稱衝突問題 (針對 `node_exporter` 等服務)。
-    - 優化了網路配置，移除硬編碼的網路名稱以避免跨專案歸屬告警。
 - **setup_git_sync.ps1**:
     - 重構腳本邏輯，使用陣列管理遠端列表，提升可維護性。
     - 新增 `git config --unset-all` 機制，確保多次執行不會產生重複設定 (Idempotency)。
