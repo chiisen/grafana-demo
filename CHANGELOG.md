@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **docker-compose.yml**:
     - 將 `grafana-setup` 服務的基礎映像檔由 `alpine:3.21` 變更為 `alpine:latest`，以節省映像檔空間。
+    - **[文檔]** 新增註解說明 `alpine:latest` 的選擇原因（降低維護成本、便於 Demo 展示）。
     - **[優化]** Prometheus 新增資料保存策略：保留 2 天或 512MB，避免硬碟空間不足。
 
 ### Removed

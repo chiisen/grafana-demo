@@ -117,6 +117,8 @@ services:
       - grafana-net
 
   grafana-setup:
+    # 使用 latest 是為了確保在 Demo 環境中總是使用最新的基礎工具 (curl, jq)
+    # 且減少手動維護版本的心智負擔。正式環境建議鎖定版本以確保穩定性。
     image: alpine:latest
     container_name: grafana-setup
     depends_on:
