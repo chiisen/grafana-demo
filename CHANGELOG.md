@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **prometheus/prometheus.yml**:
     - 將設定檔中的英文註解翻譯為繁體中文，並補充各項監控任務的說明。
 
+### Changed
+- **docker-compose.yml**:
+    - 將 `grafana-setup` 服務的基礎映像檔由 `alpine:3.21` 變更為 `alpine:latest`，以節省映像檔空間。
+    - **[優化]** Prometheus 新增資料保存策略：保留 2 天或 512MB，避免硬碟空間不足。
+
+### Removed
+- **docker-compose-src.yml**:
+    - 移除了不再使用的參考檔案。
+
 ### Fixed
 - **docker-compose.yml**:
     - 修正了 `cadvisor` 服務區塊的 YAML 縮進錯誤。

@@ -35,6 +35,8 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=2d' # 只保留 2 天數據
+      - '--storage.tsdb.retention.size=512MB' # 或限制硬碟大小，雖不直接影響 RAM 但有助於管理
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
@@ -115,7 +117,7 @@ services:
       - grafana-net
 
   grafana-setup:
-    image: alpine:3.21
+    image: alpine:latest
     container_name: grafana-setup
     depends_on:
       grafana:
